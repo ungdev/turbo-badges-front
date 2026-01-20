@@ -2,13 +2,19 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useHasRole } from '../../hooks/useRole';
 
 export default function AuthCallback() {
     const router = useRouter();
+    const hasAgentRoleOrMore = useHasRole('agent');
 
     useEffect(() => {
-        router.push('/');
-    }, [router]);
+        if (hasAgentRoleOrMore) {
+            router.push('/admin');
+            return;
+        }
+        router.push('/profile');
+    }, [router, hasAgentRoleOrMore]);
 
     return (
         <div className="min-vh-100 d-flex align-items-center justify-content-center">

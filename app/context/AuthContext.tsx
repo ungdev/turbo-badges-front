@@ -1,29 +1,16 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-interface User {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    role: Role;
-}
-
-export interface Role {
-    id: string;
-    name: string;
-}
+import type { User, Role, JWTPayload, UpdateUserInput } from '@/app/types';
 
 interface AuthContextType {
     user: User | null;
     token: string | null;
     login: () => void;
+    loginWithLocal: (email: string, password: string) => Promise<void>;
     logout: () => void;
-    updateProfile: (data: {
-        firstName?: string;
-        lastName?: string;
-    }) => Promise<void>;
+    signup: () => void;
+    updateProfile: (data: UpdateUserInput) => Promise<void>;
     uploadProfilePhoto: (file: File) => Promise<void>;
     isLoading: boolean;
     authFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
@@ -113,8 +100,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const signup = () => {
+        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/oauth/signin`;
+    };
+
     const login = () => {
         window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/oauth`;
+    };
+
+    const loginWithLocal = async (email: string, password: string) => {
+        setIsLoading(true);
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/local/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                let message = 'Échec de la connexion';
+                try {
+                    const error = await response.json();
+                    if (error.message) message = error.message;
+                } catch {
+                    // ignore
+                }
+                throw new Error(message);
+            }
+
+            const data = await response.json();
+            const access = data.access_token as string;
+            setToken(access);
+            scheduleProactiveRefresh(access);
+            await fetchUserProfile(access);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const logout = () => {
@@ -192,7 +216,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, updateProfile, uploadProfilePhoto, isLoading, authFetch }}>
+        <AuthContext.Provider value={{ user, token, login, loginWithLocal, logout, signup, updateProfile, uploadProfilePhoto, isLoading, authFetch }}>
             {children}
         </AuthContext.Provider>
     );
