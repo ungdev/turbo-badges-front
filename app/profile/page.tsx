@@ -4,11 +4,13 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { Guard } from '../components/Guard';
 import ProfileCard from '../components/ProfileCard';
-import { useHasRole } from '../hooks/useRole';
+import { useHasRoleOrAdmin } from '../hooks/useRole';
+import { useNotifications } from '@/app/context/NotificationContext';
 
 function ProfileContent() {
     const router = useRouter();
-    const { user, isLoading, uploadProfilePhoto, updateProfile, logout } = useAuth();
+    const { user, isLoading, uploadProfilePicture, updateProfile, deleteProfilePicture, logout } = useAuth();
+    const { confirm } = useNotifications();
 
     if (isLoading) {
         return (
@@ -35,10 +37,11 @@ function ProfileContent() {
                 <div className="col-md-8">
                     <ProfileCard
                         user={user}
-                        onUploadPhoto={uploadProfilePhoto}
+                        onUploadPicture={uploadProfilePicture}
+                        onDeletePicture={deleteProfilePicture}
                         onUpdateProfile={updateProfile}
                         onLogout={handleLogout}
-                        goBacktoAdminPanel={useHasRole('agent')}
+                        goBacktoAdminPanel={useHasRoleOrAdmin('agent')}
                     />
                 </div>
             </div>

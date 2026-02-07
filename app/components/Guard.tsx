@@ -72,10 +72,9 @@ export function Guard({
         }
 
         if (allowedRoles && allowedRoles.length > 0) {
+            const rolesWithAdmin = [...allowedRoles, Roles.ADMIN];
 
-            allowedRoles.push(Roles.ADMIN);
-
-            const hasPermission = allowedRoles.some(
+            const hasPermission = rolesWithAdmin.some(
                 role => role.toLowerCase() === user.role.name.toLowerCase()
             );
 
@@ -112,10 +111,9 @@ export function Guard({
     }
 
     if (allowedRoles && allowedRoles.length > 0) {
+        const rolesWithAdmin = [...allowedRoles, Roles.ADMIN];
 
-        allowedRoles.push(Roles.ADMIN);
-
-        const hasPermission = allowedRoles.some(
+        const hasPermission = rolesWithAdmin.some(
             role => role.toLowerCase() === user.role.name.toLowerCase()
         );
 

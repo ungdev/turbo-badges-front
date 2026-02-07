@@ -17,3 +17,20 @@ export interface UploadPhotoResponse {
     user: User;
     url?: string;
 }
+
+export interface APIOption {
+    id: string;
+    name: string;
+}
+
+export interface APIOptionWithAccessImagesList extends APIOption {
+    accessImages: {
+        frontPictureFilename: string;
+        backPictureFilename: string;
+    }[]
+}
+
+export interface APIOptionWithPictures extends APIOption {
+    frontPictureFilename: string;
+    backPictureFilename: string;
+}

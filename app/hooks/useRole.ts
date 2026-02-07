@@ -13,7 +13,25 @@ export function useHasRole(roleName: string): boolean {
     return user.role.name.toLowerCase() === roleName.toLowerCase();
 }
 
+export function useHasRoleOrAdmin(roleName: string): boolean {
+    const { user } = useAuth();
+
+    if (!user) return false;
+
+    return user.role.name.toLowerCase() === roleName.toLowerCase() || user.role.name.toLowerCase() === Roles.ADMIN;
+}
+
 export function useHasAnyRole(roleNames: string[]): boolean {
+    const { user } = useAuth();
+
+    if (!user) return false;
+
+    return user.role.name.toLowerCase() === Roles.ADMIN ? true : roleNames.some(
+        role => role.toLowerCase() === user.role.name.toLowerCase()
+    );
+}
+
+export function useHasAnyRoleOrAdmin(roleNames: string[]): boolean {
     const { user } = useAuth();
 
     if (!user) return false;
@@ -32,7 +50,6 @@ export function useRequireRole(
 
     useEffect(() => {
         if (!isLoading && !user) {
-            // Non connecté
             router.push(redirectTo);
             return;
         }
@@ -43,7 +60,6 @@ export function useRequireRole(
             );
 
             if (!hasPermission) {
-                // Pas les bonnes permissions
                 router.push(redirectTo);
             }
         }
@@ -77,7 +93,6 @@ export function useRequireAuth(
 
     useEffect(() => {
         if (!isLoading && !user) {
-            // Non connecté, rediriger
             router.push(redirectTo);
         }
     }, [user, isLoading, redirectTo, router]);

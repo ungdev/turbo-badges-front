@@ -8,11 +8,12 @@ export interface UserProfile {
     email: string;
     firstName: string;
     lastName: string;
+    pictureFilename?: string;
     role: Role;
 }
 
 export interface User extends UserProfile {
-    photoFilename?: string;
+    pictureFilename?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -20,4 +21,9 @@ export interface User extends UserProfile {
 export interface UpdateUserInput {
     firstName?: string;
     lastName?: string;
+}
+
+export interface UpdateUserInputWithIdAndRole extends UpdateUserInput {
+    id: string;
+    role: Role;
 }

@@ -2,11 +2,11 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useHasRole } from '../../hooks/useRole';
+import { useHasRoleOrAdmin } from '../../hooks/useRole';
 
 export default function AuthCallback() {
     const router = useRouter();
-    const hasAgentRoleOrMore = useHasRole('agent');
+    const hasAgentRoleOrMore = useHasRoleOrAdmin('agent');
 
     useEffect(() => {
         if (hasAgentRoleOrMore) {
