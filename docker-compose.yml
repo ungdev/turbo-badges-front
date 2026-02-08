@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  turbo-badges-front:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        ENVIRONMENT: ${ENVIRONMENT:-production}
+        NEXT_PUBLIC_URL: ${NEXT_PUBLIC_URL:-http://localhost:8000}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3000}
+    container_name: turbo-badges-front
+    ports:
+      - "8000:3000"
+    environment:
+      - NODE_ENV=production
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL:-http://localhost:8000}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3000}
+    restart: unless-stopped
+    networks:
+      - turbo-badges-network
+
+networks:
+  turbo-badges-network:
+    driver: bridge
