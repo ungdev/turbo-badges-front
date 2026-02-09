@@ -6,33 +6,10 @@ on:
     branches: [main, dev]
 
 jobs:
-  build:
-    runs-on: self-hosted
-    strategy:
-      matrix:
-        node-version: [25]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run build
-      - uses: lazy-actions/slatify@master
-        if: ${{ failure() }}
-        with:
-          type: ${{ job.status }}
-          job_name: '*Job ${{ github.job }}*'
-          commit: true
-          token: ${{ secrets.GITHUB_TOKEN }}
 
   deploy-dev:
     if: ${{ github.event_name != 'pull_request' && (github.ref == 'refs/heads/dev') }}
     runs-on: self-hosted
-    needs:
-      - build
     steps:
       - uses: actions/checkout@v4
       - name: Install docker
@@ -57,8 +34,6 @@ jobs:
   deploy-prod:
     if: ${{ github.event_name != 'pull_request' && (github.ref == 'refs/heads/main') }}
     runs-on: self-hosted
-    needs:
-      - build
     steps:
       - uses: actions/checkout@v4
       - name: Install docker

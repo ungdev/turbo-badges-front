@@ -36,7 +36,7 @@ export default function UserForm({ onAddUser, onCancel, existingUserIds }: UserF
         let mounted = true;
         const loadLists = async () => {
             try {
-                const resp = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/lists`);
+                const resp = await authFetch(`${env.apiUrl}/lists`);
                 if (!mounted) return;
                 if (resp.ok) {
                     const data = await resp.json();
@@ -58,7 +58,7 @@ export default function UserForm({ onAddUser, onCancel, existingUserIds }: UserF
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/users`);
+                const response = await authFetch(`${env.apiUrl}/users`);
                 if (response.ok) {
                     const data = await response.json();
                     setUsers(data);

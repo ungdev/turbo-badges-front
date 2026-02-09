@@ -4,6 +4,7 @@ import { BadgeUser, filterAndMapUsers } from '../utils/badgeUser';
 import { badgeStorage } from '../utils/badgeStorage';
 import { useNotifications } from '../../../context/NotificationContext';
 import type { Entry } from '../utils/badgeStorage';
+import { env } from '@/lib/config/env';
 
 export const useBadgeUsers = () => {
     const { authFetch } = useAuth();
@@ -17,7 +18,7 @@ export const useBadgeUsers = () => {
                 const entries = badgeStorage.loadEntries();
 
                 if (entries.length > 0) {
-                    const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/users`);
+                    const response = await authFetch(`${env.apiUrl}/users`);
                     if (response.ok) {
                         const allUsers = await response.json();
                         const loadedUsers = filterAndMapUsers(allUsers, entries as any);
@@ -51,7 +52,7 @@ export const useBadgeUsers = () => {
 
     const loadFromUserIds = async (userIds: string[], entries?: Entry[]) => {
         try {
-            const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/users`);
+            const response = await authFetch(`${env.apiUrl}/users`);
             if (response.ok) {
                 const allUsers = await response.json();
                 const loadedUsers = entries && entries.length > 0
