@@ -11,6 +11,7 @@ export const useBadgeUsers = () => {
     const { error, success } = useNotifications();
     const [badgeUsers, setBadgeUsers] = useState<BadgeUser[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [initialLoadSuccessful, setInitialLoadSuccessful] = useState(false);
 
     useEffect(() => {
         const loadUsers = async () => {
@@ -23,9 +24,12 @@ export const useBadgeUsers = () => {
                         const allUsers = await response.json();
                         const loadedUsers = filterAndMapUsers(allUsers, entries as any);
                         setBadgeUsers(loadedUsers);
+                        setInitialLoadSuccessful(true);
                     } else {
                         error('Erreur lors du chargement des utilisateurs');
                     }
+                } else {
+                    setInitialLoadSuccessful(true);
                 }
             } catch (err) {
                 console.error('Erreur lors du chargement des utilisateurs:', err);
@@ -39,7 +43,7 @@ export const useBadgeUsers = () => {
     }, [authFetch, error]);
 
     useEffect(() => {
-        if (!isLoading) {
+        if (!isLoading && initialLoadSuccessful) {
             const entries: Entry[] = badgeUsers.map(u => ({
                 id: u.id,
                 commission: (u as any).commission,
@@ -48,7 +52,7 @@ export const useBadgeUsers = () => {
             }));
             badgeStorage.saveEntries(entries);
         }
-    }, [badgeUsers, isLoading]);
+    }, [badgeUsers, isLoading, initialLoadSuccessful]);
 
     const loadFromUserIds = async (userIds: string[], entries?: Entry[]) => {
         try {
@@ -59,6 +63,7 @@ export const useBadgeUsers = () => {
                     ? filterAndMapUsers(allUsers, entries as any)
                     : filterAndMapUsers(allUsers, userIds as any);
                 setBadgeUsers(loadedUsers);
+                setInitialLoadSuccessful(true);
                 return loadedUsers.length;
             } else {
                 error('Erreur lors du chargement des utilisateurs');
@@ -71,9 +76,14 @@ export const useBadgeUsers = () => {
         }
     };
 
+    const updateBadgeUsers = (users: BadgeUser[] | ((prev: BadgeUser[]) => BadgeUser[])) => {
+        setBadgeUsers(users);
+        setInitialLoadSuccessful(true);
+    };
+
     return {
         badgeUsers,
-        setBadgeUsers,
+        setBadgeUsers: updateBadgeUsers,
         isLoading,
         loadFromUserIds
     };
