@@ -11,6 +11,8 @@ const getApiUrl = () => {
 
 const apiUrl = getApiUrl();
 const apiHostname = apiUrl.hostname;
+const apiPath = apiUrl.pathname.endsWith('/') ? apiUrl.pathname.slice(0, -1) : apiUrl.pathname;
+const uploadsPath = apiPath ? `${apiPath}/uploads/**` : '/uploads/**';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
@@ -19,17 +21,22 @@ const nextConfig: NextConfig = {
       {
         protocol: 'http',
         hostname: 'localhost',
-        pathname: '/uploads/**',
+        pathname: '/uploads/**',  // Localhost sans prefix en dev
       },
       {
         protocol: 'http',
         hostname: '127.0.0.1',
-        pathname: '/uploads/**',
+        pathname: '/uploads/**',  // 127.0.0.1 sans prefix en dev
       },
       {
         protocol: 'https',
         hostname: apiHostname,
-        pathname: '/uploads/**',
+        pathname: uploadsPath,  // Utilise le path de l'API
+      },
+      {
+        protocol: 'http',
+        hostname: apiHostname,
+        pathname: uploadsPath,  // Support HTTP aussi (si besoin)
       },
     ],
     formats: ['image/avif', 'image/webp'],
