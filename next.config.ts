@@ -9,23 +9,30 @@ const getApiUrl = () => {
   }
 };
 
+const getInternalApiUrl = () => {
+  const internalUrl = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  try {
+    return new URL(internalUrl);
+  } catch {
+    throw new Error(`URL invalide pour INTERNAL_API_URL: ${internalUrl}`);
+  }
+};
+
 const apiUrl = getApiUrl();
 const apiHostname = apiUrl.hostname;
 const apiProtocol = apiUrl.protocol.replace(':', '') as 'http' | 'https';
 const apiPath = apiUrl.pathname.endsWith('/') ? apiUrl.pathname.slice(0, -1) : apiUrl.pathname;
 const uploadsPath = apiPath ? `${apiPath}/uploads/**` : '/uploads/**';
 
-// Logs pour déboguer la configuration
-console.log('=== Configuration Next.js Images ===');
-console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
-console.log('Protocol:', apiProtocol);
-console.log('Hostname:', apiHostname);
-console.log('API Path:', apiPath);
-console.log('Uploads Path:', uploadsPath);
+const internalApiUrl = getInternalApiUrl();
+const internalHostname = internalApiUrl.hostname;
+const internalProtocol = internalApiUrl.protocol.replace(':', '') as 'http' | 'https';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
   images: {
+    loader: 'custom',
+    loaderFile: './lib/image-loader.ts',
     remotePatterns: [
       {
         protocol: 'http',
@@ -37,12 +44,19 @@ const nextConfig: NextConfig = {
         hostname: '127.0.0.1',
         pathname: '/uploads/**',  // 127.0.0.1 sans prefix en dev
       },
+
       {
         protocol: apiProtocol,
         hostname: apiHostname,
-        pathname: uploadsPath,  // Utilise le path de l'API depuis env
+        pathname: uploadsPath,
       },
-      // Support des deux protocoles si nécessaire
+
+      ...(internalHostname !== apiHostname ? [{
+        protocol: internalProtocol,
+        hostname: internalHostname,
+        pathname: uploadsPath,
+      }] : []),
+
       ...(apiProtocol === 'https' ? [{
         protocol: 'http' as const,
         hostname: apiHostname,
@@ -53,17 +67,8 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
 
-    // Désactive l'optimisation en développement pour localhost
-    // Car Next.js bloque les IPs privées (127.0.0.1) par sécurité
-    unoptimized: process.env.NODE_ENV === 'development',
+    unoptimized: false,
   },
 };
-
-// Log des remotePatterns configurés
-console.log('Remote Patterns configurés:');
-nextConfig.images?.remotePatterns?.forEach((pattern, index) => {
-  console.log(`  [${index}] ${pattern.protocol}://${pattern.hostname}${pattern.pathname || '/**'}`);
-});
-console.log('====================================\n');
 
 export default nextConfig;
