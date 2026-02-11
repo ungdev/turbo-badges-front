@@ -17,10 +17,8 @@ export default function HomePage() {
     useEffect(() => {
         const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
         const reason = searchParams?.get("reason");
-        logger.debug(`Auth reason: ${reason}`, { context: 'AuthPage' });
         if (reason === 'unauthenticated' && !shownRef.current) {
             shownRef.current = true;
-            logger.debug("Showing unauthenticated warning", { context: 'AuthPage' });
             warning("Vous avez été déconnecté.");
         }
     }, [warning]);

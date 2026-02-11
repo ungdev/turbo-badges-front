@@ -27,12 +27,12 @@ const uploadsPath = apiPath ? `${apiPath}/uploads/**` : '/uploads/**';
 const internalApiUrl = getInternalApiUrl();
 const internalHostname = internalApiUrl.hostname;
 const internalProtocol = internalApiUrl.protocol.replace(':', '') as 'http' | 'https';
+const internalApiPath = internalApiUrl.pathname.endsWith('/') ? internalApiUrl.pathname.slice(0, -1) : internalApiUrl.pathname;
+const internalUploadsPath = internalApiPath ? `${internalApiPath}/uploads/**` : '/uploads/**';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
   images: {
-    loader: 'custom',
-    loaderFile: './lib/image-loader.ts',
     remotePatterns: [
       {
         protocol: 'http',
@@ -51,10 +51,11 @@ const nextConfig: NextConfig = {
         pathname: uploadsPath,
       },
 
+      // Service K8s interne (si différent du hostname public)
       ...(internalHostname !== apiHostname ? [{
         protocol: internalProtocol,
         hostname: internalHostname,
-        pathname: uploadsPath,
+        pathname: internalUploadsPath,
       }] : []),
 
       ...(apiProtocol === 'https' ? [{
