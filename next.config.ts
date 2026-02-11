@@ -11,8 +11,17 @@ const getApiUrl = () => {
 
 const apiUrl = getApiUrl();
 const apiHostname = apiUrl.hostname;
+const apiProtocol = apiUrl.protocol.replace(':', '') as 'http' | 'https';
 const apiPath = apiUrl.pathname.endsWith('/') ? apiUrl.pathname.slice(0, -1) : apiUrl.pathname;
 const uploadsPath = apiPath ? `${apiPath}/uploads/**` : '/uploads/**';
+
+// Logs pour déboguer la configuration
+console.log('=== Configuration Next.js Images ===');
+console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
+console.log('Protocol:', apiProtocol);
+console.log('Hostname:', apiHostname);
+console.log('API Path:', apiPath);
+console.log('Uploads Path:', uploadsPath);
 
 const nextConfig: NextConfig = {
   output: 'standalone',
@@ -29,15 +38,16 @@ const nextConfig: NextConfig = {
         pathname: '/uploads/**',  // 127.0.0.1 sans prefix en dev
       },
       {
-        protocol: 'https',
+        protocol: apiProtocol,
         hostname: apiHostname,
-        pathname: uploadsPath,  // Utilise le path de l'API
+        pathname: uploadsPath,  // Utilise le path de l'API depuis env
       },
-      {
-        protocol: 'http',
+      // Support des deux protocoles si nécessaire
+      ...(apiProtocol === 'https' ? [{
+        protocol: 'http' as const,
         hostname: apiHostname,
-        pathname: uploadsPath,  // Support HTTP aussi (si besoin)
-      },
+        pathname: uploadsPath,
+      }] : []),
     ],
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -48,5 +58,12 @@ const nextConfig: NextConfig = {
     unoptimized: process.env.NODE_ENV === 'development',
   },
 };
+
+// Log des remotePatterns configurés
+console.log('Remote Patterns configurés:');
+nextConfig.images?.remotePatterns?.forEach((pattern, index) => {
+  console.log(`  [${index}] ${pattern.protocol}://${pattern.hostname}${pattern.pathname || '/**'}`);
+});
+console.log('====================================\n');
 
 export default nextConfig;
